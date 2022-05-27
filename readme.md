@@ -6,6 +6,22 @@ pkg r(remove) <packages...>
 pkg stat
 ```
 
+spell translations
+
+```shell
+$ pkg a sys-libs/musl
+"cave" "resolve" "--no-blockers-from" "*/*" "--preserve-world" "sys-libs/musl" "--execute"
+...
+
+$ pkg a -ti686-linux-gnu sys-libs/glibc
+"cave" "--environment" ":gnu" "resolve" "--cross-host" "i686-pc-linux-gnu" "--make" "cross-compile" "--preserve-world" "sys-libs/glibc" "--execute"
+...
+
+$ pkg a -tx86_64-linux-gnu sys-libs/glibc
+"cave" "--environment" ":gnu" "resolve" "--cross-host" "x86_64-pc-linux-gnu" "--make" "cross-compile" "--preserve-world" "sys-libs/glibc" "--execute"
+...
+```
+
 ### yet to update below
 
 download [exherbo musl tarball](https://dev.exherbo.org/stages/exherbo-x86_64-pc-linux-musl-current.tar.xz)
