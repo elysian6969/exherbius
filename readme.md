@@ -1,3 +1,13 @@
+'lil paludis wrapper for summoning demons, apparently
+
+```
+pkg a(dd) <packages...>
+pkg r(remove) <packages...>
+pkg stat
+```
+
+### yet to update below
+
 download [exherbo musl tarball](https://dev.exherbo.org/stages/exherbo-x86_64-pc-linux-musl-current.tar.xz)
 
 you know what to do
