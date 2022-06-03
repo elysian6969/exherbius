@@ -108,6 +108,27 @@ where
     let _wait = child.wait();
 }
 
+fn update_i686() {
+    let mut command = cave();
+
+    command
+        .args(["--environment", ":gnu"])
+        .arg("resolve")
+        .arg("--complete")
+        .args(["--continue-on-failure", "if-satisfied"])
+        .args(["--cross-host", "i686-pc-linux-gnu"])
+        .args(["--keep", "if-same-metadata"])
+        .args(["--keep-targets", "if-same-metadata"])
+        .args(["--make", "cross-compile"])
+        .arg("world")
+        .arg("--execute");
+
+    println!("{command:?}");
+
+    let mut child = command.spawn().expect("cave resolve");
+    let _wait = child.wait();
+}
+
 fn resolve_x86_64<I, S>(packages: I)
 where
     I: IntoIterator<Item = S>,
@@ -122,6 +143,27 @@ where
         .args(["--make", "cross-compile"])
         .arg("--preserve-world")
         .args(packages)
+        .arg("--execute");
+
+    println!("{command:?}");
+
+    let mut child = command.spawn().expect("cave resolve");
+    let _wait = child.wait();
+}
+
+fn update_x86_64() {
+    let mut command = cave();
+
+    command
+        .args(["--environment", ":gnu"])
+        .arg("resolve")
+        .arg("--complete")
+        .args(["--continue-on-failure", "if-satisfied"])
+        .args(["--cross-host", "x86_64-pc-linux-gnu"])
+        .args(["--keep", "if-same-metadata"])
+        .args(["--keep-targets", "if-same-metadata"])
+        .args(["--make", "cross-compile"])
+        .arg("world")
         .arg("--execute");
 
     println!("{command:?}");
@@ -145,6 +187,12 @@ struct Remove {
 }
 
 #[derive(Parser)]
+struct Update {
+    #[clap(default_value = Triple::host().as_str(), short = 't', long)]
+    triple: Triple,
+}
+
+#[derive(Parser)]
 enum Options {
     #[clap(alias = "a")]
     Add(Add),
@@ -159,7 +207,7 @@ enum Options {
     Sync,
 
     #[clap(alias = "u")]
-    Update,
+    Update(Update),
 }
 
 fn resolve<I, S>(packages: I, triple: Triple)
@@ -175,6 +223,17 @@ where
     };
 
     resolve(packages)
+}
+
+fn update(triple: Triple) {
+    let update = match triple.as_tuple() {
+        (Arch::i686, _sys, Env::Gnu) => update_i686,
+        (Arch::x86_64, _sys, Env::Gnu) => update_x86_64,
+        (Arch::x86_64, _sys, Env::Musl) => update_main,
+        _ => panic!("not supported"),
+    };
+
+    update()
 }
 
 fn sync() {
@@ -212,6 +271,6 @@ fn main() {
             remove.triple,
         ),
         Options::Sync => sync(),
-        Options::Update => update_main(),
+        Options::Update(info) => update(info.triple),
     }
 }
