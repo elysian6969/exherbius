@@ -2,15 +2,17 @@
 
 ```
 pkg a(dd) <packages...>
+pkg i(nfo)
 pkg r(remove) <packages...>
-pkg stat
+pkg s(ync)
+pkg u(pdate)
 ```
 
 spell translations
 
 ```shell
 $ pkg a sys-libs/musl
-"cave" "resolve" "--no-blockers-from" "*/*" "--preserve-world" "sys-libs/musl" "--execute"
+"cave" "resolve" "--no-blockers-from" "dev-libs/argp-standalone" "--no-blockers-from" "dev-libs/musl-fts" "--no-blockers-from" "dev-libs/musl-obstack" "--no-blockers-from" "sys-libs/musl-compat" "--preserve-world" "sys-libs/musl" "--execute"
 ...
 
 $ pkg a -ti686-linux-gnu sys-libs/glibc
