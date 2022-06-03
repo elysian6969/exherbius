@@ -50,7 +50,10 @@ where
 
     command
         .arg("resolve")
-        .args(["--no-blockers-from", "*/*"])
+        .args(["--no-blockers-from", "dev-libs/argp-standalone"])
+        .args(["--no-blockers-from", "dev-libs/musl-fts"])
+        .args(["--no-blockers-from", "dev-libs/musl-obstack"])
+        .args(["--no-blockers-from", "sys-libs/musl-compat"])
         .arg("--preserve-world")
         .args(packages)
         .arg("--execute");
@@ -58,7 +61,28 @@ where
     println!("{command:?}");
 
     let mut child = command.spawn().expect("cave resolve");
+    let _wait = child.wait();
+}
 
+fn update_main() {
+    let mut command = cave();
+
+    command
+        .arg("resolve")
+        .arg("--complete")
+        .args(["--continue-on-failure", "if-satisfied"])
+        .args(["--keep", "if-same-metadata"])
+        .args(["--keep-targets", "if-same-metadata"])
+        .args(["--no-blockers-from", "dev-libs/argp-standalone"])
+        .args(["--no-blockers-from", "dev-libs/musl-fts"])
+        .args(["--no-blockers-from", "dev-libs/musl-obstack"])
+        .args(["--no-blockers-from", "sys-libs/musl-compat"])
+        .arg("world")
+        .arg("--execute");
+
+    println!("{command:?}");
+
+    let mut child = command.spawn().expect("cave resolve");
     let _wait = child.wait();
 }
 
@@ -81,7 +105,6 @@ where
     println!("{command:?}");
 
     let mut child = command.spawn().expect("cave resolve");
-
     let _wait = child.wait();
 }
 
@@ -104,7 +127,6 @@ where
     println!("{command:?}");
 
     let mut child = command.spawn().expect("cave resolve");
-
     let _wait = child.wait();
 }
 
@@ -127,11 +149,17 @@ enum Options {
     #[clap(alias = "a")]
     Add(Add),
 
+    #[clap(alias = "i")]
+    Info,
+
     #[clap(alias = "r")]
     Remove(Remove),
 
     #[clap(alias = "s")]
-    Stat,
+    Sync,
+
+    #[clap(alias = "u")]
+    Update,
 }
 
 fn resolve<I, S>(packages: I, triple: Triple)
@@ -149,28 +177,41 @@ where
     resolve(packages)
 }
 
+fn sync() {
+    let mut command = cave();
+
+    command.arg("sync");
+
+    println!("{command:?}");
+
+    let mut child = command.spawn().expect("cave sync");
+    let _wait = child.wait();
+}
+
+fn info() {
+    let main = read_db(DB);
+    let i686 = read_db(I686_DB);
+    let x86_64 = read_db(X86_64_DB);
+
+    let x86_64_musl = main.len();
+    let i686_gnu = i686.len();
+    let x86_64_gnu = x86_64.len();
+    let total = x86_64_musl + i686_gnu + x86_64_gnu;
+
+    println!("{total} (x86_64-musl {x86_64_musl}, i686-gnu {i686_gnu}, x86_64-gnu {x86_64_gnu})");
+}
+
 fn main() {
     let options = Options::parse();
 
     match options {
         Options::Add(add) => resolve(add.list, add.triple),
+        Options::Info => info(),
         Options::Remove(remove) => resolve(
             remove.list.into_iter().map(|pkg| format!("!{pkg}")),
             remove.triple,
         ),
-        Options::Stat => {
-            let main = read_db(DB);
-            let i686 = read_db(I686_DB);
-            let x86_64 = read_db(X86_64_DB);
-
-            let x86_64_musl = main.len();
-            let i686_gnu = i686.len();
-            let x86_64_gnu = x86_64.len();
-            let total = x86_64_musl + i686_gnu + x86_64_gnu;
-
-            println!(
-                "{total} (x86_64-musl {x86_64_musl}, i686-gnu {i686_gnu}, x86_64-gnu {x86_64_gnu})"
-            );
-        }
+        Options::Sync => sync(),
+        Options::Update => update_main(),
     }
 }
