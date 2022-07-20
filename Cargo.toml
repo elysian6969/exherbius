@@ -1,11 +1,6 @@
-[package]
-edition = "2021"
-name = "pkg"
-version = "0.0.0"
-
-[dependencies.clap]
-features = ["derive"]
-version = "3.1"
-
-[dependencies.mix_triple]
-path = "/mizzle/dev/mix/crates/triple"
+[workspace]
+members = [
+    "env",
+    "pkg",
+    "target",
+]
