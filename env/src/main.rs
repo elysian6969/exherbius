@@ -35,37 +35,38 @@ fn main() {
 
     let category = var("CATEGORY");
     let package = var("PN");
+    let category = category.as_str();
+    let package = package.as_str();
 
     let mut flags = vec!["-Ofast", "-fomit-frame-pointer", "-march=native", "-pipe"];
 
-    match (category.as_str(), package.as_str()) {
+    match (category, package) {
         ("dev-lang", "python") | ("sys-libs", "glibc") | ("sys-libs", "musl") => {
             flags.push("-fno-fast-math");
+        }
+        ("x11-libs", "gtk") => {
+            // remove -march=native due to gtk having broken code
+            flags.remove(2);
         }
         _ => {}
     }
 
     let usr = Path::new("/usr");
     let prefix = usr.join(target.as_gnu());
-
     let bin = prefix.join("bin");
     let lib = prefix.join("lib");
-
     let cmake = bin.join("cmake");
-
     let pkgconf = bin.join("pkgconf");
     let pkgconf_path = lib.join("pkgconfig");
-
     let locale = "en_US.UTF-8";
 
-    let mut path = String::from("/milk/global:/usr/x86_64-pc-linux-musl/bin");
+    let mut path = String::from("/usr/x86_64-pc-linux-musl/libexec/paludis/utils:/usr/x86_64-pc-linux-musl/libexec/paludis/utils/exheres-0:/milk/global:/usr/x86_64-pc-linux-musl/bin");
 
     if target != DEFAULT_TARGET {
         path.insert_str(0, &format!("{}:", bin.display()));
     }
 
-    path.insert_str(0, "/usr/x86_64-pc-linux-musl/libexec/paludis/utils:/usr/x86_64-pc-linux-musl/libexec/paludis/utils/exheres-0:");
-
+    export(&"CARGO_HOME", &"/milk/x86_64-linux-musl/rust");
     export(&"CHOST", &DEFAULT_TARGET.as_gnu());
     export(&"CMAKE", &cmake);
     export(&"LANG", &locale);
@@ -73,6 +74,7 @@ fn main() {
     export(&"PATH", &path);
     export(&"PKG_CONFIG", &pkgconf);
     export(&"PKG_CONFIG_PATH", &pkgconf_path);
+    export(&"RUSTUP_HOME", &"/milk/x86_64-linux-musl/rust");
 
     let flags = flags.join(" ");
 
